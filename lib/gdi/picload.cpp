@@ -1375,4 +1375,3 @@ SWIG_VOID(int) loadPic(ePtr<gPixmap> &result, std::string filename, int x, int y
 
 	return 0;
 }
-
