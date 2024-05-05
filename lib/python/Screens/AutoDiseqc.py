@@ -21,6 +21,7 @@ class AutoDiseqc(Screen, ConfigListScreen):
 		eDVBFrontendParametersSatellite.Inversion_Off, 192, \
 		eDVBFrontendParametersSatellite.System_DVB_S, eDVBFrontendParametersSatellite.Modulation_Auto, \
 		eDVBFrontendParametersSatellite.RollOff_auto, eDVBFrontendParametersSatellite.Pilot_Unknown, \
+		-1, 0, 0,
 		1079, 1, "Astra 1 19.2e"),
 
 		# astra 235 astra ses
@@ -29,6 +30,7 @@ class AutoDiseqc(Screen, ConfigListScreen):
 		eDVBFrontendParametersSatellite.Inversion_Off, 235, \
 		eDVBFrontendParametersSatellite.System_DVB_S, eDVBFrontendParametersSatellite.Modulation_Auto, \
 		eDVBFrontendParametersSatellite.RollOff_auto, eDVBFrontendParametersSatellite.Pilot_Unknown, \
+		-1, 0, 0,
 		3224, 3, "Astra 3 23.5e"),
 
 		# astra 282 bbc
@@ -37,6 +39,7 @@ class AutoDiseqc(Screen, ConfigListScreen):
 		eDVBFrontendParametersSatellite.Inversion_Off, 282, \
 		eDVBFrontendParametersSatellite.System_DVB_S, eDVBFrontendParametersSatellite.Modulation_Auto, \
 		eDVBFrontendParametersSatellite.RollOff_auto, eDVBFrontendParametersSatellite.Pilot_Unknown, \
+		-1, 0, 0,
 		2045, 2, "Astra 2 28.2e"),
 
 		# hotbird 130 rai
@@ -45,6 +48,7 @@ class AutoDiseqc(Screen, ConfigListScreen):
 		eDVBFrontendParametersSatellite.Inversion_Off, 130, \
 		eDVBFrontendParametersSatellite.System_DVB_S, eDVBFrontendParametersSatellite.Modulation_Auto, \
 		eDVBFrontendParametersSatellite.RollOff_auto, eDVBFrontendParametersSatellite.Pilot_Unknown, \
+		-1, 0, 0,
 		12400, 318, "Hotbird 13.0e"),
 	]
 
@@ -58,9 +62,12 @@ class AutoDiseqc(Screen, ConfigListScreen):
 	SAT_TABLE_MODULATION = 7
 	SAT_TABLE_ROLLOFF = 8
 	SAT_TABLE_PILOT = 9
-	SAT_TABLE_TSID = 10
-	SAT_TABLE_ONID = 11
-	SAT_TABLE_NAME = 12
+	SAT_TABLE_ISID = 10
+	SAT_TABLE_PLSMODE = 11
+	SAT_TABLE_PLSCODE = 12
+	SAT_TABLE_TSID = 13
+	SAT_TABLE_ONID = 14
+	SAT_TABLE_NAME = 15
 
 	def __init__(self, session, feid, nr_of_ports, simple_tone, simple_sat_change):
 		Screen.__init__(self, session)
@@ -148,27 +155,27 @@ class AutoDiseqc(Screen, ConfigListScreen):
 		if self.state == 0:
 			if self.port_index == 0:
 				self.clearNimEntries()
-				config.Nims[self.feid].diseqcA.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
+				config.Nims[self.feid].dvbs.diseqcA.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
 			elif self.port_index == 1:
 				self.clearNimEntries()
-				config.Nims[self.feid].diseqcB.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
+				config.Nims[self.feid].dvbs.diseqcB.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
 			elif self.port_index == 2:
 				self.clearNimEntries()
-				config.Nims[self.feid].diseqcC.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
+				config.Nims[self.feid].dvbs.diseqcC.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
 			elif self.port_index == 3:
 				self.clearNimEntries()
-				config.Nims[self.feid].diseqcD.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
+				config.Nims[self.feid].dvbs.diseqcD.value = "%d" % (self.sat_frequencies[self.index][self.SAT_TABLE_ORBPOS])
 
 			if self.nr_of_ports == 4:
-				config.Nims[self.feid].diseqcMode.value = "diseqc_a_b_c_d"
+				config.Nims[self.feid].dvbs.diseqcMode.value = "diseqc_a_b_c_d"
 			elif self.nr_of_ports == 2:
-				config.Nims[self.feid].diseqcMode.value = "diseqc_a_b"
+				config.Nims[self.feid].dvbs.diseqcMode.value = "diseqc_a_b"
 			else:
-				config.Nims[self.feid].diseqcMode.value = "single"
+				config.Nims[self.feid].dvbs.diseqcMode.value = "single"
 
-			config.Nims[self.feid].configMode.value = "simple"
-			config.Nims[self.feid].simpleDiSEqCSetVoltageTone = self.simple_tone
-			config.Nims[self.feid].simpleDiSEqCOnlyOnSatChange = self.simple_sat_change
+			config.Nims[self.feid].dvbs.configMode.value = "simple"
+			config.Nims[self.feid].dvbs.simpleDiSEqCSetVoltageTone = self.simple_tone
+			config.Nims[self.feid].dvbs.simpleDiSEqCOnlyOnSatChange = self.simple_sat_change
 
 			self.saveAndReloadNimConfig()
 			self.state += 1
@@ -199,13 +206,13 @@ class AutoDiseqc(Screen, ConfigListScreen):
 		self.clearNimEntries()
 		for x in self.found_sats:
 			if x[0] == "A":
-				config.Nims[self.feid].diseqcA.value = "%d" % (x[1])
+				config.Nims[self.feid].dvbs.diseqcA.value = "%d" % (x[1])
 			elif x[0] == "B":
-				config.Nims[self.feid].diseqcB.value = "%d" % (x[1])
+				config.Nims[self.feid].dvbs.diseqcB.value = "%d" % (x[1])
 			elif x[0] == "C":
-				config.Nims[self.feid].diseqcC.value = "%d" % (x[1])
+				config.Nims[self.feid].dvbs.diseqcC.value = "%d" % (x[1])
 			elif x[0] == "D":
-				config.Nims[self.feid].diseqcD.value = "%d" % (x[1])
+				config.Nims[self.feid].dvbs.diseqcD.value = "%d" % (x[1])
 		self.saveAndReloadNimConfig()
 
 	def setupClear(self):
@@ -213,10 +220,10 @@ class AutoDiseqc(Screen, ConfigListScreen):
 		self.saveAndReloadNimConfig()
 
 	def clearNimEntries(self):
-		config.Nims[self.feid].diseqcA.value = "3601"
-		config.Nims[self.feid].diseqcB.value = "3601"
-		config.Nims[self.feid].diseqcC.value = "3601"
-		config.Nims[self.feid].diseqcD.value = "3601"
+		config.Nims[self.feid].dvbs.diseqcA.value = "3601"
+		config.Nims[self.feid].dvbs.diseqcB.value = "3601"
+		config.Nims[self.feid].dvbs.diseqcC.value = "3601"
+		config.Nims[self.feid].dvbs.diseqcD.value = "3601"
 
 	def saveAndReloadNimConfig(self):
 		config.Nims[self.feid].save()
